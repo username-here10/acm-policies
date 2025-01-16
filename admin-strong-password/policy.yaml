@@ -1,0 +1,32 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy1
+spec:
+  remediationAction: "enforce" # or inform
+  disabled: false # or true
+  namespaceSelector:
+    include:
+    - "default"
+    - "my-namespace"
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: operator
+          # namespace: # will be supplied by the controller via the namespaceSelector
+        spec:
+          remediationAction: "inform"
+          object-templates:
+          - complianceType: "musthave" # at this level, it means the role must exist and must have the following rules
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: Role
+            metadata:
+              name: example
+            objectDefinition:
+              rules:
+                - complianceType: "musthave" # at this level, it means if the role exists the rule is a musthave
+                  apiGroups: ["extensions", "apps"]
+                  resources: ["deployments"]
+                  verbs: ["get", "list", "watch", "create", "delete","patch"]
